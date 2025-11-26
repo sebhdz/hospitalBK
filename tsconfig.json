@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    /* --- Estructura del Proyecto --- */
+    "rootDir": "./src",           /* Donde está tu código TS */
+    "outDir": "./dist",           /* Donde se genera el JS para producción */
+
+    /* --- Configuración de Módulos (Standard Node.js) --- */
+    "target": "es2016",           /* Versión de JS compatible */
+    "module": "commonjs",         /* El estándar de Node.js y Express */
+    "moduleResolution": "node",
+    "esModuleInterop": true,      /* Permite importar librerías CommonJS como si fueran ES6 */
+
+    /* --- Tipado y Estrictos --- */
+    "strict": true,               /* Activa todas las reglas base de seguridad */
+    "skipLibCheck": true,         /* Salta chequeo de tipos en node_modules (ahorra tiempo) */
+    "forceConsistentCasingInFileNames": true,
+
+    /* --- Opcionales (Tus preferencias) --- */
+    "sourceMap": true,            /* Útil para debugear */
+    "noUncheckedIndexedAccess": true /* Mantenlo si quieres máxima seguridad */
+  }
+}
