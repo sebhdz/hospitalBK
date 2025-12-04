@@ -5,15 +5,21 @@ import db from "../database";
 export const getCitasPorDoctor =  (req: Request< { idDoctor:string } >, res: Response) => {
 
     const { idDoctor } = req.params
-    const id_medico = parseInt(idDoctor);
+    const idDoctorNumber = parseInt(idDoctor);
 
-    const citasMedico = (): Cita[] => {
+    try{
 
         const stmt = db.prepare(`SELECT * FROM citas WHERE id_medico = ?`);
+        const citas: Cita[] = stmt.all(idDoctorNumber) as Cita[];
+        res.status(200).json(citas);
 
-        return stmt.all(id_medico) as Cita[];
+    }catch(error){
+
+        console.error("Error en la base de datos: ", error);
+        res.status(500).json({error: "Error al buscar citas"});
+
     }
 
-    res.json(citasMedico());
+
 
 }
