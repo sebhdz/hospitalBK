@@ -1,10 +1,9 @@
 import express, {Application, Request, Response} from "express";
+import citas_routes from "./routes/citas_routes";
 
 const app: Application = express();
 app.use(express.json());
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hola Mundo!');
-});
+app.use('/citas', citas_routes);
 
 export default app;
