@@ -4,8 +4,7 @@ import db from "../database";
 
 export const getCitasPorDoctor =  (req: Request< { idDoctor:string } >, res: Response) => {
 
-    const { idDoctor } = req.params
-    const idDoctorNumber = parseInt(idDoctor);
+    const idDoctorNumber = parseInt(req.params.idDoctor);
 
     try{
 
@@ -60,5 +59,22 @@ export const actualizarCita = (req: Request<{}, {}, CitaDTO>, res: Response) => 
         console.error("Error en la base de datos: ", error);
         res.status(500).json({error: "Error al actualizar cita"});
     }
+}
+
+export const eliminarCita = (req: Request<{ idCita: string }>, res:Response) => {
+
+    const idCita = parseInt(req.params.idCita);
+
+    const query = `DELETE FROM citas WHERE id = ?`
+
+    try{
+        db.prepare(query).run(idCita);
+        res.send("Cita Eliminada");
+    }catch (error){
+        console.error("Error en la base de datos: ", error);
+        res.status(500).json({error: "Error al eliminar cita"});
+    }
+
+
 
 }
