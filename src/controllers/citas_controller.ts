@@ -1,5 +1,5 @@
 import { Response, Request} from 'express';
-import {Cita, CrearCitaDTO} from "../models/citas_models";
+import {Cita, CitaDTO} from "../models/citas_models";
 import db from "../database";
 
 export const getCitasPorDoctor =  (req: Request< { idDoctor:string } >, res: Response) => {
@@ -21,9 +21,9 @@ export const getCitasPorDoctor =  (req: Request< { idDoctor:string } >, res: Res
     }
 }
 
-export const crearCita = (req: Request<{}, {}, CrearCitaDTO>, res: Response) => {
+export const crearCita = (req: Request<{}, {}, CitaDTO>, res: Response) => {
 
-    const nuevaCita: CrearCitaDTO = req.body
+    const nuevaCita: CitaDTO = req.body
 
     const query = `
                 INSERT INTO citas (fecha_hora, motivo_consulta, id_medico, id_paciente) 
@@ -36,4 +36,29 @@ export const crearCita = (req: Request<{}, {}, CrearCitaDTO>, res: Response) => 
         console.error("Error en la base de datos: ", error);
         res.status(500).json({error: "Error al crear cita"});
     }
+}
+
+export const actualizarCita = (req: Request<{}, {}, CitaDTO>, res: Response) => {
+
+    const citaActualizada: CitaDTO = req.body;
+
+    const query = `
+                  UPDATE citas SET 
+                                   fecha_hora = @fecha_hora,
+                                   motivo_consulta = @motivo,
+                                   estado = @estado,
+                                   id_medico = @id_medico,
+                                   id_paciente = @id_paciente
+                  WHERE id = @id              
+    `;
+
+    try{
+        db.prepare(query).run(citaActualizada);
+        res.send("Cita actualizada");
+    }
+    catch(error){
+        console.error("Error en la base de datos: ", error);
+        res.status(500).json({error: "Error al actualizar cita"});
+    }
+
 }
