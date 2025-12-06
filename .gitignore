@@ -14,3 +14,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Base de datos
+*.sqlite
+*.db
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
