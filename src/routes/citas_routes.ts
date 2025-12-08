@@ -1,7 +1,8 @@
 import { Router } from "express";
-import {crearCita, getCitasPorDoctor, actualizarCita, eliminarCita} from "../controllers/citas_controller";
+import {crearCita, getCitasPorDoctor, actualizarCita, eliminarCita,obtenerTodasCitas} from "../controllers/citas_controller";
 const router  = Router();
 
+router.get('/', obtenerTodasCitas);
 router.get('/:idDoctor', getCitasPorDoctor);
 router.post('/', crearCita);
 router.put('/', actualizarCita);
