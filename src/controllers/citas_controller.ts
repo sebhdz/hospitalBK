@@ -4,8 +4,26 @@ import db from "../database";
 // GET: Obtener TODAS las citas
 export const obtenerTodasCitas = (req: Request, res: Response) => {
     try {
-        const stmt = db.prepare('SELECT * FROM citas ORDER BY fecha_hora DESC');
-        const citas = stmt.all();
+        const stmt = db.prepare(
+            `SELECT
+                 c.id,
+                 c.fecha_hora,
+                 p.nombres as nombres_paciente,
+                 p.apellidos as apellidos_paciente,
+                 ph.nombres as nombres_medico,
+                 ph.apellidos as apellidos_medico,
+                 c.motivo_consulta,
+                 c.estado,
+                 c.id_medico,
+                 c.id_paciente
+             FROM citas c
+                      INNER JOIN main.pacientes p on p.id = c.id_paciente
+                      INNER JOIN personal_hospital ph ON ph.id = c.id_medico
+                    ORDER BY fecha_hora DESC`
+        );
+
+
+        const citas :Cita[] = stmt.all() as Cita[];
         res.status(200).json(citas);
     } catch (error) {
         console.error("Error GET citas:", error);

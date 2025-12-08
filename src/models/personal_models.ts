@@ -8,6 +8,7 @@ export interface PersonalDB {
     turno: string;
     rol: string;
     activo: number;
+    password?: string;
 }
 
 export interface PersonalInputDTO {

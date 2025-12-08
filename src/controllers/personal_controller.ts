@@ -14,10 +14,10 @@ export const obtenerMedicos = (req: Request, res: Response) => {
             nombreCorto: `Dr. ${m.nombres.charAt(0)}. ${m.apellidos}`,
             especialidad: m.especialidad,
             cedula: m.cedula_profesional,
-            anosExperiencia: 5, 
-            consultorio: "Consultorio General", 
+            anosExperiencia: 5,
+            consultorio: "Consultorio General",
             horarioLaboral: m.turno,
-            serviciosOfrece: ["Consulta General", "Valoración"], 
+            serviciosOfrece: ["Consulta General", "Valoración"],
             telefono: "449 000 00 00",
             sexo: "M",
             correo: m.email,
@@ -92,12 +92,12 @@ export const crearMedico = (req: Request<{}, {}, PersonalInputDTO>, res: Respons
         `);
 
         const info = stmt.run(
-            nombres, 
-            apellidos, 
-            email, 
-            password || '123456', 
-            cedula, 
-            especialidad, 
+            nombres,
+            apellidos,
+            email,
+            password || '123456',
+            cedula,
+            especialidad,
             horarioLaboral
         );
 
@@ -138,7 +138,7 @@ export const actualizarMedico = (req: Request<{ id: string }>, res: Response) =>
             SET nombres = ?, apellidos = ?, email = ?, especialidad = ?, turno = ?, cedula_profesional = ?
             WHERE id = ? AND rol = 'doctor'
         `);
-        
+
         const info = stmt.run(nombres, apellidos, email, especialidad, horarioLaboral, cedula, id);
 
         if (info.changes === 0) {
@@ -149,5 +149,26 @@ export const actualizarMedico = (req: Request<{ id: string }>, res: Response) =>
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Error al actualizar médico" });
+    }
+};
+
+export const login = (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    try {
+        const stmt = db.prepare("SELECT * FROM personal_hospital WHERE email = ? AND activo = 1");
+        const user = stmt.get(email) as PersonalDB;
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({ error: "Credenciales inválidas" });
+        }
+
+        // Return user info (excluding password)
+        const { password: _, ...userInfo } = user;
+        res.json({ message: "Login exitoso", user: userInfo });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error en el servidor" });
     }
 };
