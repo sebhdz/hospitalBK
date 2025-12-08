@@ -15,7 +15,8 @@ export const obtenerPacientes = (req: Request, res: Response) => {
             edad: calcularEdad(p.fecha_nacimiento),
             telefono: p.telefono,
             correo: p.email, 
-            sexo: p.sexo
+            sexo: p.sexo,
+            direccion: p.direccion
         }));
 
         res.json(pacientesFrontend);
