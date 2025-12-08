@@ -10,6 +10,7 @@ import notas_routes from "./routes/notas_routes";
 import historial_routes from "./routes/historial_routes";
 import recetas_routes from "./routes/recetas_routes";
 import quirofano_routes from "./routes/quirofano_routes";
+import admin_routes from "./routes/admin_routes";
 
 const app: Application = express();
 
@@ -25,5 +26,6 @@ app.use('/notas', notas_routes);
 app.use('/historial', historial_routes);
 app.use('/recetas', recetas_routes);
 app.use('/quirofano', quirofano_routes);
+app.use('/admin', admin_routes);
 
 export default app;
