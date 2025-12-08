@@ -77,30 +77,50 @@ export const obtenerPacientePorId = (req: Request<{ id: string }>, res: Response
     const { id } = req.params;
 
     try {
-        const stmt = db.prepare('SELECT * FROM pacientes WHERE id = ?');
-        const p = stmt.get(id) as PacienteDB;
+        const stmtPaciente = db.prepare('SELECT * FROM pacientes WHERE id = ?');
+        const p = stmtPaciente.get(id) as PacienteDB;
 
         if (!p) {
             return res.status(404).json({ error: 'Paciente no encontrado' });
         }
 
+        const queryClinica = `
+            SELECT n.peso_kg, n.altura_cm, h.tipo_sangre, h.antecedentes_hered, h.antecedentes_patol
+            FROM historial_clinico h
+            JOIN notas_clinicas n ON n.id_historial = h.id
+            WHERE h.id_paciente = ?
+            ORDER BY n.fecha_hora DESC
+            LIMIT 1
+        `;
+        
+        const datos = db.prepare(queryClinica).get(id) as any;
+
         const pacienteFrontend = {
             id: p.id,
             nombres: p.nombres,
             apellidos: p.apellidos,
-            edad: calcularEdad(p.fecha_nacimiento),
-            fechaNacimiento: p.fecha_nacimiento, 
-            telefono: p.telefono,
-            correo: p.email,
-            email: p.email,
+            fechaNacimiento: p.fecha_nacimiento,
             sexo: p.sexo,
+            telefono: p.telefono,
+            email: p.email,
             direccion: p.direccion,
-            contactoEmergencia: p.contacto_emergencia
+            contactoEmergencia: p.contacto_emergencia,
+            
+            alergias: p.alergias || "Ninguna", 
+            
+            peso: datos?.peso_kg || 70,       
+            altura: datos?.altura_cm || 170,  
+            tipoSangre: datos?.tipo_sangre || "Desconocido",
+            
+            enfermedadesCronicas: datos?.antecedentes_patol || "No refiere",
+            antecedentesFamiliares: datos?.antecedentes_hered || "No refiere"
         };
 
         res.json(pacienteFrontend);
+
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener el paciente' });
+        console.error("Error al obtener paciente:", error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
 

@@ -127,3 +127,27 @@ export const eliminarMedico = (req: Request<{ id: string }>, res: Response) => {
         res.status(500).json({ error: "Error al eliminar médico" });
     }
 };
+// ACTUALIZAR MÉDICO
+export const actualizarMedico = (req: Request<{ id: string }>, res: Response) => {
+    const { id } = req.params;
+    const { nombres, apellidos, email, especialidad, horarioLaboral, cedula } = req.body;
+
+    try {
+        const stmt = db.prepare(`
+            UPDATE personal_hospital 
+            SET nombres = ?, apellidos = ?, email = ?, especialidad = ?, turno = ?, cedula_profesional = ?
+            WHERE id = ? AND rol = 'doctor'
+        `);
+        
+        const info = stmt.run(nombres, apellidos, email, especialidad, horarioLaboral, cedula, id);
+
+        if (info.changes === 0) {
+            return res.status(404).json({ error: "Médico no encontrado" });
+        }
+
+        res.json({ message: "Médico actualizado correctamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al actualizar médico" });
+    }
+};
