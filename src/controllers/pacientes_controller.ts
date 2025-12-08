@@ -3,7 +3,10 @@ import db from '../database';
 import { PacienteInputDTO, PacienteDB } from '../models/pacientes_models';
 
 
+import { getUserIdFromRequest, logAudit } from '../services/audit_service';
+
 export const obtenerPacientes = (req: Request, res: Response) => {
+    // ... (sin cambios)
     try {
         const stmt = db.prepare('SELECT * FROM pacientes');
         const pacientesRaw = stmt.all() as PacienteDB[];
@@ -14,7 +17,7 @@ export const obtenerPacientes = (req: Request, res: Response) => {
             apellidos: p.apellidos,
             edad: calcularEdad(p.fecha_nacimiento),
             telefono: p.telefono,
-            correo: p.email, 
+            correo: p.email,
             sexo: p.sexo,
             direccion: p.direccion
         }));
@@ -26,16 +29,54 @@ export const obtenerPacientes = (req: Request, res: Response) => {
     }
 };
 
+export const buscarPacientes = (req: Request, res: Response) => {
+    // ... (sin cambios de lógica, solo asegúrate de no borrarlo)
+    const { termino } = req.query;
+
+    if (!termino) {
+        return res.status(400).json({ error: "Debe proporcionar un término de búsqueda" });
+    }
+
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM pacientes 
+            WHERE normalize_text(nombres) LIKE ? OR normalize_text(apellidos) LIKE ?
+        `);
+
+        const terminoNormalizado = (termino as string)
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        const terminoLike = `%${terminoNormalizado}%`;
+        const pacientesRaw = stmt.all(terminoLike, terminoLike) as PacienteDB[];
+
+        const pacientesFrontend = pacientesRaw.map(p => ({
+            id: p.id,
+            nombres: p.nombres,
+            apellidos: p.apellidos,
+            edad: calcularEdad(p.fecha_nacimiento),
+            telefono: p.telefono,
+            correo: p.email,
+            sexo: p.sexo,
+            direccion: p.direccion
+        }));
+
+        res.json(pacientesFrontend);
+    } catch (error) {
+        console.error("Error al buscar:", error);
+        res.status(500).json({ error: "Error al buscar pacientes" });
+    }
+}
+
 
 export const crearPaciente = (req: Request<{}, {}, PacienteInputDTO>, res: Response) => {
-    const { 
-        nombres, apellidos, fechaNacimiento, sexo, 
-        telefono, email, direccion, 
-        contactoEmergencia, telefonoEmergencia 
+    const {
+        nombres, apellidos, fechaNacimiento, sexo,
+        telefono, email, direccion,
+        contactoEmergencia, telefonoEmergencia
     } = req.body;
 
-    const contactoCompleto = contactoEmergencia 
-        ? `${contactoEmergencia} (${telefonoEmergencia || ''})` 
+    const contactoCompleto = contactoEmergencia
+        ? `${contactoEmergencia} (${telefonoEmergencia || ''})`
         : null;
 
     try {
@@ -45,21 +86,24 @@ export const crearPaciente = (req: Request<{}, {}, PacienteInputDTO>, res: Respo
                 telefono, email, direccion, contacto_emergencia
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
-        
+
         const info = stmt.run(
-            nombres, 
-            apellidos, 
-            fechaNacimiento, 
-            sexo, 
-            telefono, 
-            email, 
-            direccion, 
+            nombres,
+            apellidos,
+            fechaNacimiento,
+            sexo,
+            telefono,
+            email,
+            direccion,
             contactoCompleto
         );
 
-        res.status(201).json({ 
-            message: "Paciente registrado", 
-            id: info.lastInsertRowid 
+        // LOG
+        logAudit("CREAR", "pacientes", null, req.body, getUserIdFromRequest(req));
+
+        res.status(201).json({
+            message: "Paciente registrado",
+            id: info.lastInsertRowid
         });
 
     } catch (error: any) {
@@ -74,6 +118,7 @@ export const crearPaciente = (req: Request<{}, {}, PacienteInputDTO>, res: Respo
 
 
 export const obtenerPacientePorId = (req: Request<{ id: string }>, res: Response) => {
+    // ... (sin cambios)
     const { id } = req.params;
 
     try {
@@ -92,7 +137,7 @@ export const obtenerPacientePorId = (req: Request<{ id: string }>, res: Response
             ORDER BY n.fecha_hora DESC
             LIMIT 1
         `;
-        
+
         const datos = db.prepare(queryClinica).get(id) as any;
 
         const pacienteFrontend = {
@@ -105,13 +150,13 @@ export const obtenerPacientePorId = (req: Request<{ id: string }>, res: Response
             email: p.email,
             direccion: p.direccion,
             contactoEmergencia: p.contacto_emergencia,
-            
-            alergias: p.alergias || "Ninguna", 
-            
-            peso: datos?.peso_kg || 70,       
-            altura: datos?.altura_cm || 170,  
+
+            alergias: p.alergias || "Ninguna",
+
+            peso: datos?.peso_kg || 70,
+            altura: datos?.altura_cm || 170,
             tipoSangre: datos?.tipo_sangre || "Desconocido",
-            
+
             enfermedadesCronicas: datos?.antecedentes_patol || "No refiere",
             antecedentesFamiliares: datos?.antecedentes_hered || "No refiere"
         };
@@ -127,24 +172,28 @@ export const obtenerPacientePorId = (req: Request<{ id: string }>, res: Response
 
 export const actualizarPaciente = (req: Request<{ id: string }, {}, PacienteInputDTO>, res: Response) => {
     const { id } = req.params;
-    const { 
+    const {
         nombres, apellidos, fechaNacimiento, sexo,
-        telefono, email, direccion, 
-        contactoEmergencia, telefonoEmergencia 
+        telefono, email, direccion,
+        contactoEmergencia, telefonoEmergencia
     } = req.body;
 
-    const contactoCompleto = contactoEmergencia 
+    const contactoCompleto = contactoEmergencia
         ? `${contactoEmergencia} (${telefonoEmergencia || ''})`
         : null;
 
     try {
+        // Obtener datos anteriores para el log
+        const stmtGet = db.prepare("SELECT * FROM pacientes WHERE id = ?");
+        const pacienteAnterior = stmtGet.get(id);
+
         const stmt = db.prepare(`
             UPDATE pacientes 
             SET nombres = ?, apellidos = ?, fecha_nacimiento = ?, sexo = ?,
                 telefono = ?, email = ?, direccion = ?, contacto_emergencia = ?
             WHERE id = ?
         `);
-        
+
         const info = stmt.run(
             nombres, apellidos, fechaNacimiento, sexo,
             telefono, email, direccion, contactoCompleto, id
@@ -153,6 +202,9 @@ export const actualizarPaciente = (req: Request<{ id: string }, {}, PacienteInpu
         if (info.changes === 0) {
             return res.status(404).json({ error: 'No se encontró el paciente para actualizar' });
         }
+
+        // LOG
+        logAudit("ACTUALIZAR", "pacientes", pacienteAnterior, req.body, getUserIdFromRequest(req));
 
         res.json({ message: 'Datos del paciente actualizados correctamente' });
     } catch (error) {
@@ -165,6 +217,10 @@ export const eliminarPaciente = (req: Request<{ id: string }>, res: Response) =>
     const id = parseInt(req.params.id);
 
     try {
+        // Obtener datos anteriores para el log
+        const stmtGet = db.prepare("SELECT * FROM pacientes WHERE id = ?");
+        const pacienteAnterior = stmtGet.get(id);
+
         const stmt = db.prepare('DELETE FROM pacientes WHERE id = ?');
         const info = stmt.run(id);
 
@@ -172,12 +228,15 @@ export const eliminarPaciente = (req: Request<{ id: string }>, res: Response) =>
             return res.status(404).json({ error: "Paciente no encontrado" });
         }
 
+        // LOG
+        logAudit("ELIMINAR", "pacientes", pacienteAnterior, null, getUserIdFromRequest(req));
+
         res.status(200).json({ message: "Paciente eliminado exitosamente" });
 
     } catch (error: any) {
         if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
-            res.status(400).json({ 
-                error: "No se puede eliminar: el paciente tiene historial médico o citas." 
+            res.status(400).json({
+                error: "No se puede eliminar: el paciente tiene historial médico o citas."
             });
         } else {
             res.status(500).json({ error: "Error al eliminar paciente" });

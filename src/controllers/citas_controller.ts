@@ -76,15 +76,15 @@ export const crearCita = (req: Request, res: Response) => {
             INSERT INTO citas (fecha_hora, motivo_consulta, estado, id_medico, id_paciente) 
             VALUES (?, ?, ?, ?, ?)
         `);
-        
+
         const info = stmt.run(
-            fecha_hora, 
-            motivo, 
-            estado || 'Agendada', 
-            id_medico, 
+            fecha_hora,
+            motivo,
+            estado || 'Agendada',
+            id_medico,
             id_paciente
         );
-        
+
         res.status(201).json({ message: "Cita creada", id: info.lastInsertRowid });
     } catch (error: any) {
         console.error("❌ Error CREATE cita:", error);
@@ -110,9 +110,9 @@ export const actualizarCita = (req: Request, res: Response) => {
         `);
 
         const info = stmt.run(fecha_hora, motivo, estado, id_medico, id_paciente, id);
-        
+
         if (info.changes === 0) return res.status(404).json({ error: "Cita no encontrada" });
-        
+
         res.json({ message: "Cita actualizada correctamente" });
     } catch (error: any) {
         console.error("❌ Error UPDATE cita:", error);
