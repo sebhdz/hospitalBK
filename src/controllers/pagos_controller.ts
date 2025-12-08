@@ -56,3 +56,17 @@ export const crearPago = (req: Request<{}, {}, PagoDTO>, res: Response) => {
         res.status(500).json({ error: "Error al registrar pago" });
     }
 };
+export const obtenerTotalHoy = (req: Request, res: Response) => {
+    try {
+        // Suma los pagos donde la fecha coincida con hoy (tiempo local de SQLite)
+        const stmt = db.prepare(`
+            SELECT SUM(monto_total) as total 
+            FROM pagos 
+            WHERE date(fecha_pago) = date('now', 'localtime')
+        `);
+        const resultado = stmt.get() as { total: number };
+        res.json({ total: resultado.total || 0 });
+    } catch (error) {
+        res.status(500).json({ error: "Error al sumar" });
+    }
+};

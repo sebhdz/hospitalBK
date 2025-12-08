@@ -74,8 +74,8 @@ const insertarCitas = () => {
     const stmt = db.prepare(`INSERT INTO citas (fecha_hora, motivo_consulta, estado, id_medico, id_paciente) VALUES (?, ?, ?, ?, ?)`);
     stmt.run('2025-12-01 10:00:00', 'Dolor en la pierna', 'Terminada', 1, 1);
     stmt.run('2025-12-05 12:00:00', 'Arritmia', 'Agendada', 1, 1);
-    stmt.run('2025-12-06 09:00:00', 'Migraña severa', 'En curso', 4, 2); 
-    stmt.run('2025-12-20 16:00:00', 'Control Pediátrico', 'Agendada', 3, 2);
+    stmt.run('2025-12-07 09:00:00', 'Migraña severa', 'En curso', 4, 2); 
+    stmt.run('2025-12-07 23:45:00', 'Control Pediátrico', 'Agendada', 3, 2);
     console.log("✅ Citas insertadas");
 };
 
