@@ -1,14 +1,16 @@
 import { Router } from 'express';
-import { 
-    obtenerMedicos, 
-    crearMedico, 
-    obtenerMedicoPorId, 
+import {
+    obtenerMedicos,
+    crearMedico,
+    obtenerMedicoPorId,
     eliminarMedico,
-    actualizarMedico
+    actualizarMedico,
+    login
 } from '../controllers/personal_controller';
 
 const router = Router();
 
+router.post('/login', login);
 router.get('/', obtenerMedicos);
 router.get('/:id', obtenerMedicoPorId);
 router.post('/', crearMedico);
