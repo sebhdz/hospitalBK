@@ -1,7 +1,7 @@
 
 INSERT INTO personal_hospital (email, password, nombres, apellidos, rol, cedula_profesional, especialidad, turno)
 VALUES
-('jsho@gmail.com', '12345', 'John', 'Sho', 'doctor', 'A12345', 'cirujano', 'matutino')
+('jsho@gmail', '12345', 'John', 'Sho', 'doctor', 'A12345', 'cirujano', 'matutino')
 ;
 
 INSERT INTO pacientes (nombres, apellidos, fecha_nacimiento, sexo, telefono, email, direccion, alergias, contacto_emergencia)

@@ -131,15 +131,16 @@ const limpiarDB = () => {
 };
 
 const insertarMedicos = () => {
-    const stmt = db.prepare(`INSERT INTO personal_hospital (nombres, apellidos, email, password, rol, cedula_profesional, especialidad, turno, activo) VALUES (?, ?, ?, '123', 'doctor', ?, ?, ?, 1)`);
+    const stmt = db.prepare(`INSERT INTO personal_hospital (nombres, apellidos, email, password, rol, cedula_profesional, especialidad, turno, activo) VALUES (?, ?, ?, '123', ?, ?, ?, ?, 1)`);
     const docs = [
-        ['Elena', 'García', 'elena.garcia@email.com', 'CP-98765', 'Cardiología', 'Lun-Vie 9:00-18:00'],
-        ['Elizabeth', 'Reed', 'elizabeth.reed@clinicadental.mx', 'CED-1011223', 'Odontología General', 'Lun-Vie 9:00-18:00'],
-        ['Sarah', 'Connor', 'sarah.connor@clinicadental.mx', 'CED-4044556', 'Pediatría', 'Mar-Sab 10:00-19:00'],
-        ['James', 'Kim', 'james.kim@clinicadental.mx', 'CED-7077889', 'Cardiología', 'Lun-Vie 8:00-17:00'],
-        ['Andrew', 'Grant', 'andrew.grant@clinicadental.mx', 'CED-9099112', 'Dermatología', 'Mier-Vie 12:00-20:00']
+        ['Elena', 'García', 'elena.garcia@email.com', 'recepcionista', 'CP-98765', 'Cardiología', 'Lun-Vie 9:00-18:00'],
+        ['Elizabeth', 'Reed', 'elizabeth.reed@clinicadental.mx', 'doctor', 'CED-1011223', 'Odontología General', 'Lun-Vie 9:00-18:00'],
+        ['Sarah', 'Connor', 'sarah.connor@clinicadental.mx', 'doctor', 'CED-4044556', 'Pediatría', 'Mar-Sab 10:00-19:00'],
+        ['James', 'Kim', 'james.kim@clinicadental.mx', 'doctor', 'CED-7077889', 'Cardiología', 'Lun-Vie 8:00-17:00'], // Corregido el orden
+        ['Andrew', 'Grant', 'root@admin.com', 'administrativo', 'CED-9099112', 'Dermatología', 'Mier-Vie 12:00-20:00'] // Corregido email
     ];
-    for (const d of docs) stmt.run(d[0], d[1], d[2], d[3], d[4], d[5]);
+    // AHORA SÍ: Pasamos los 7 argumentos
+    for (const d of docs) stmt.run(d[0], d[1], d[2], d[3], d[4], d[5], d[6]);
     console.log(`✅ ${docs.length} Médicos insertados`);
 };
 
@@ -185,10 +186,10 @@ const insertarDatosClinicos = () => {
 
 const insertarCitas = () => {
     const stmt = db.prepare(`INSERT INTO citas (fecha_hora, motivo_consulta, estado, id_medico, id_paciente) VALUES (?, ?, ?, ?, ?)`);
-    stmt.run('2025-12-01 10:00:00', 'Dolor en la pierna', 'Terminada', 1, 1);
-    stmt.run('2025-12-05 12:00:00', 'Arritmia', 'Agendada', 1, 1);
-    stmt.run('2025-12-07 09:00:00', 'Migraña severa', 'En curso', 4, 2);
-    stmt.run('2025-12-07 23:45:00', 'Control Pediátrico', 'Agendada', 3, 2);
+    stmt.run('2025-12-01 10:00:00', 'Dolor en la pierna', 'terminada', 1, 1);
+    stmt.run('2025-12-05 12:00:00', 'Arritmia', 'agendada', 1, 1);
+    stmt.run('2025-12-07 09:00:00', 'Migraña severa', 'en curso', 4, 2);
+    stmt.run('2025-12-07 23:45:00', 'Control Pediátrico', 'agendada', 3, 2);
     console.log("✅ Citas insertadas");
 };
 
