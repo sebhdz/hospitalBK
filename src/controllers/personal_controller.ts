@@ -81,14 +81,16 @@ export const obtenerMedicoPorId = (req: Request<{ id: string }>, res: Response) 
 };
 
 export const crearMedico = (req: Request<{}, {}, PersonalInputDTO>, res: Response) => {
-    const { nombres, apellidos, email, cedula, especialidad, horarioLaboral, password } = req.body;
+    // 1. Añadimos 'rol' a la destructuración para leerlo del body
+    const { nombres, apellidos, email, cedula, especialidad, horarioLaboral, password, rol } = req.body;
 
     try {
+        // 2. Cambiamos 'doctor' fijo por el signo de interrogación ?
         const stmt = db.prepare(`
             INSERT INTO personal_hospital (
                 nombres, apellidos, email, password, rol, 
                 cedula_profesional, especialidad, turno, activo
-            ) VALUES (?, ?, ?, ?, 'doctor', ?, ?, ?, 1)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
         `);
 
         const info = stmt.run(
@@ -96,19 +98,20 @@ export const crearMedico = (req: Request<{}, {}, PersonalInputDTO>, res: Respons
             apellidos,
             email,
             password || '123456',
+            rol || 'doctor', // 3. Usamos el rol que llega, o 'doctor' por defecto
             cedula,
             especialidad,
             horarioLaboral
         );
 
-        res.status(201).json({ message: "Médico registrado", id: info.lastInsertRowid });
+        res.status(201).json({ message: "Personal registrado", id: info.lastInsertRowid });
 
     } catch (error: any) {
         if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             res.status(400).json({ error: "El email ya está registrado" });
         } else {
             console.error(error);
-            res.status(500).json({ error: "Error al crear médico" });
+            res.status(500).json({ error: "Error al crear personal" });
         }
     }
 };

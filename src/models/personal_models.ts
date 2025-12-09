@@ -19,4 +19,5 @@ export interface PersonalInputDTO {
     especialidad: string;
     horarioLaboral: string;
     password?: string;
+    rol?: string;
 }
