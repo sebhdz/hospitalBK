@@ -28,4 +28,13 @@ app.use('/recetas', recetas_routes);
 app.use('/quirofano', quirofano_routes);
 app.use('/admin', admin_routes);
 
+// Servir archivos estáticos del frontend (carpeta 'dist' en la raíz)
+import path from 'path';
+app.use(express.static(path.join(__dirname, '../public/dist')));
+
+// Manejar cualquier ruta no reconocida devolviendo el index.html (para SPAs como React/Vue)
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/dist/index.html'));
+});
+
 export default app;
